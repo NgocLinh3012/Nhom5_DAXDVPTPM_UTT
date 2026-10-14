@@ -4,6 +4,8 @@ class LophocController extends Controller
 {
     public function index()
     {
+        $this->needAdmin();
+
         $m = $this->model("Lophoc_m");
 
         $rows = $m->getAll();
@@ -14,55 +16,55 @@ class LophocController extends Controller
         ]);
     }
 
-
     public function create()
     {
+        $this->needAdmin();
+
         $this->view("layout_admin", [
             "page" => "Pages/lh_create"
         ]);
     }
 
-
     public function store()
     {
+        $this->needAdmin();
+
         if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-            header(
-                "Location: " .
-                BASE_URL .
-                "/index.php?url=LophocController/index"
-            );
+            header("Location: " . BASE_URL . "/index.php?url=LophocController/index");
             exit;
         }
 
-        $ma = trim($_POST["ma_lop"] ?? "");
-        $ten = trim($_POST["ten_lop"] ?? "");
-        $trangthai = (int) ($_POST["trangthai"] ?? 1);
+        $ma_lop = trim($_POST["ma_lop"] ?? "");
+        $ten_lop = trim($_POST["ten_lop"] ?? "");
 
-        if ($ma === "" || $ten === "") {
-            die("Vui lòng nhập mã lớp và tên lớp.");
+        if ($ma_lop === "" || $ten_lop === "") {
+            $this->view("layout_admin", [
+                "page" => "Pages/lh_create",
+                "err" => "Vui lòng nhập đầy đủ thông tin"
+            ]);
+            return;
         }
 
         $m = $this->model("Lophoc_m");
 
-        if ($m->existsMaLop($ma)) {
-            die("Mã lớp đã tồn tại.");
+        if ($m->existsMaLop($ma_lop)) {
+            $this->view("layout_admin", [
+                "page" => "Pages/lh_create",
+                "err" => "Mã lớp đã tồn tại"
+            ]);
+            return;
         }
 
-        $nguoi_tao = "Admin";
+        $ok = $m->insert($ma_lop, $ten_lop);
 
-        $m->insert(
-            $ma,
-            $ten,
-            $trangthai,
-            $nguoi_tao
-        );
+        if ($ok) {
+            header("Location: " . BASE_URL . "/index.php?url=LophocController/index");
+            exit;
+        }
 
-        header(
-            "Location: " .
-            BASE_URL .
-            "/index.php?url=LophocController/index"
-        );
-
-        exit;
+        $this->view("layout_admin", [
+            "page" => "Pages/lh_create",
+            "err" => "Không thể thêm lớp học"
+        ]);
     }
 }

@@ -368,3 +368,11 @@ COLLATE=utf8mb4_unicode_ci;
 
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- =========================================================
+-- DỮ LIỆU MẪU ĐĂNG NHẬP (TEST ACCOUNTS)
+-- =========================================================
+INSERT INTO users (id, hoten, username, email, password_hash, trangthai, role) VALUES
+(1, 'Quản Trị Viên', 'admin', 'admin@utt.edu.vn', '123', 1, 'admin'),
+(2, 'Giảng Viên 1', 'gv1', 'gv1@utt.edu.vn', '123', 1, 'gv')
+ON DUPLICATE KEY UPDATE username=VALUES(username);

@@ -4,12 +4,16 @@ class App
 {
     public function __construct()
     {
-        $url = $_GET["url"] ?? "HomeController/index";
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $url = $_GET["url"] ?? "AuthController/login";
 
         $arr = explode("/", trim($url, "/"));
 
-        $controller = $arr[0] ?? "HomeController";
-        $action = $arr[1] ?? "index";
+        $controller = !empty($arr[0]) ? $arr[0] : "AuthController";
+        $action = $arr[1] ?? "login";
         $params = array_slice($arr, 2);
 
         $file = __DIR__ . "/../MVC/Controllers/$controller.php";

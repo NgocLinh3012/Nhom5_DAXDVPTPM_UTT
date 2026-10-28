@@ -1,92 +1,16 @@
-<div class="panel">
-
-  <div class="panel-title">
-    THÊM LỚP HỌC
+<?php
+/**
+ * VIEW: Thêm Lớp học | THÀNH VIÊN: TV4
+ * FILE NÀY TV4 ĐƯỢC SỬA TỰ DO.
+ * Biến $data được extract() từ Controller – xem Controller tương ứng.
+ */
+?>
+<div class="container-fluid py-4">
+  <div class="text-center py-5">
+    <div style="font-size:3rem">🚧</div>
+    <h3 class="mt-3">Thêm Lớp học</h3>
+    <p class="text-muted">Đang được <strong>TV4</strong> phát triển.</p>
+    <hr class="my-4 w-50 mx-auto">
+    <small class="text-secondary">File: Pages/lh_create.php</small>
   </div>
-
-  <div class="panel-actions">
-
-    <a
-      class="btn-green"
-      href="<?= BASE_URL ?>/index.php?url=LophocController/index"
-    >
-      Quay lại
-    </a>
-
-  </div>
-
-</div>
-
-
-<div class="box" style="padding:14px">
-
-  <form
-    method="post"
-    action="<?= BASE_URL ?>/index.php?url=LophocController/store"
-  >
-
-    <div class="row2">
-
-      <div>
-
-        <label>Mã lớp</label>
-
-        <input
-          name="ma_lop"
-          required
-          placeholder="VD: CNT58DH"
-        >
-
-      </div>
-
-
-      <div>
-
-        <label>Tên lớp</label>
-
-        <input
-          name="ten_lop"
-          required
-          placeholder="VD: CNT58DH"
-        >
-
-      </div>
-
-    </div>
-
-
-    <div class="row2">
-
-      <div>
-
-        <label>Trạng thái</label>
-
-        <select name="trangthai">
-
-          <option value="1">
-            Yes
-          </option>
-
-          <option value="0">
-            No
-          </option>
-
-        </select>
-
-      </div>
-
-      <div></div>
-
-    </div>
-
-
-    <button
-      class="btn-green"
-      type="submit"
-    >
-      Lưu
-    </button>
-
-  </form>
-
 </div>

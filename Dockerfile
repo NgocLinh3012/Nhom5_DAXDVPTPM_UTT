@@ -1,13 +1,30 @@
 FROM php:8.2-apache
 
-RUN docker-php-ext-install pdo pdo_mysql \
-    && a2enmod rewrite
+# Bật mod_rewrite cho Apache
+RUN a2enmod rewrite
 
-ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
+# Cài extension PDO MySQL
+RUN docker-php-ext-install pdo pdo_mysql
 
-RUN sed -ri -e "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" \
-    /etc/apache2/sites-available/*.conf \
-    /etc/apache2/apache2.conf \
-    /etc/apache2/conf-available/*.conf
+# Cài composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-WORKDIR /var/www/html
+# Cấu hình Apache: DocumentRoot = /var/www/html
+# Cho phép .htaccess
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html|g' /etc/apache2/sites-available/000-default.conf && \
+    sed -i 's|<Directory /var/www/>|<Directory /var/www/html/>|g' /etc/apache2/apache2.conf && \
+    sed -i 's|AllowOverride None|AllowOverride All|g' /etc/apache2/apache2.conf
+
+# Đặt thư mục làm việc
+WORKDIR /var/www/html/thitracnghiem
+
+# Copy source code vào image (volumes sẽ override khi dev)
+COPY . .
+
+# Cài vendor nếu chưa có
+RUN if [ ! -d vendor ]; then composer install --no-dev --optimize-autoloader; fi
+
+# Gán quyền
+RUN chown -R www-data:www-data /var/www/html
+
+EXPOSE 80

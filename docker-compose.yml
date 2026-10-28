@@ -1,52 +1,71 @@
+version: "3.9"
+
 services:
+  # ── PHP + Apache ──────────────────────────────────────────
   app:
     build: .
-    container_name: utt_exam_app
+    container_name: thitracnghiem_app
     ports:
       - "8080:80"
     volumes:
-      - .:/var/www/html
-    environment:
-      DB_HOST: db
-      DB_PORT: 3306
-      DB_NAME: thitracnghiem
-      DB_USER: utt_user
-      DB_PASS: utt_password
+      - .:/var/www/html/thitracnghiem
     depends_on:
       db:
         condition: service_healthy
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html
+      - DB_HOST=db
+      - DB_NAME=thitracnghiem
+      - DB_USER=root
+      - DB_PASS=
+      - DB_PORT=3306
+      - BASE_URL=http://localhost:8080/thitracnghiem/public/
+    networks:
+      - thitracnghiem_net
 
+  # ── MySQL ─────────────────────────────────────────────────
   db:
     image: mysql:8.0
-    container_name: utt_exam_db
+    container_name: thitracnghiem_db
     restart: unless-stopped
     environment:
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_DATABASE: thitracnghiem
-      MYSQL_USER: utt_user
-      MYSQL_PASSWORD: utt_password
-      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
-      - ./database/thitracnghiem.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./thitracnghiem.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -proot_password --silent"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "--silent"]
       interval: 5s
       timeout: 5s
-      retries: 20
-      start_period: 10s
+      retries: 10
+    networks:
+      - thitracnghiem_net
 
+  # ── phpMyAdmin (tuỳ chọn) ─────────────────────────────────
   phpmyadmin:
-    image: phpmyadmin:5.2-apache
-    container_name: utt_exam_phpmyadmin
+    image: phpmyadmin:latest
+    container_name: thitracnghiem_pma
     restart: unless-stopped
     ports:
       - "8081:80"
     environment:
       PMA_HOST: db
       PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: ""
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - thitracnghiem_net
 
 volumes:
   db_data:
+
+networks:
+  thitracnghiem_net:
+    driver: bridge

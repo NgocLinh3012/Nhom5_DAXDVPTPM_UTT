@@ -1,94 +1,16 @@
 <?php
-$rows = $data["rows"] ?? [];
+/**
+ * VIEW: Danh sách Lớp học | THÀNH VIÊN: TV4
+ * FILE NÀY TV4 ĐƯỢC SỬA TỰ DO.
+ * Biến $data được extract() từ Controller – xem Controller tương ứng.
+ */
 ?>
-
-<div class="page-head compact">
-
-  <div class="page-title">
-    QUẢN LÝ LỚP HỌC
+<div class="container-fluid py-4">
+  <div class="text-center py-5">
+    <div style="font-size:3rem">🚧</div>
+    <h3 class="mt-3">Danh sách Lớp học</h3>
+    <p class="text-muted">Đang được <strong>TV4</strong> phát triển.</p>
+    <hr class="my-4 w-50 mx-auto">
+    <small class="text-secondary">File: Pages/lh_list.php</small>
   </div>
-
-  <div class="page-actions">
-
-    <a
-      class="btn btn-success btn-sm"
-      href="<?= BASE_URL ?>/index.php?url=LophocController/create"
-    >
-      Thêm mới
-    </a>
-
-  </div>
-
-</div>
-
-
-<div class="box">
-
-  <table class="tbl">
-
-    <thead>
-
-      <tr>
-        <th>STT</th>
-        <th>Mã lớp</th>
-        <th>Tên lớp</th>
-        <th>Trạng thái</th>
-        <th>Người tạo</th>
-        <th>Ngày tạo</th>
-        <th>Số HV</th>
-      </tr>
-
-    </thead>
-
-
-    <tbody>
-
-      <?php foreach ($rows as $i => $r): ?>
-
-        <tr>
-
-          <td>
-            <?= $i + 1 ?>
-          </td>
-
-          <td>
-            <?= htmlspecialchars($r["ma_lop"]) ?>
-          </td>
-
-          <td>
-            <?= htmlspecialchars($r["ten_lop"]) ?>
-          </td>
-
-          <td>
-            <?= (int) $r["trangthai"] === 1
-                ? "Yes"
-                : "No" ?>
-          </td>
-
-          <td>
-            <?= htmlspecialchars(
-                $r["nguoi_tao"] ?? ""
-            ) ?>
-          </td>
-
-          <td>
-            <?= htmlspecialchars(
-                $r["created_at"] ?? ""
-            ) ?>
-          </td>
-
-          <td>
-            <?= (int) (
-                $r["so_hoc_vien"] ?? 0
-            ) ?>
-          </td>
-
-        </tr>
-
-      <?php endforeach; ?>
-
-    </tbody>
-
-  </table>
-
 </div>

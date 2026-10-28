@@ -1,68 +1,25 @@
 <?php
-
+/**
+ * MODULE: Lớp học | THÀNH VIÊN: TV4
+ * Xem README.md → Mục TV4 để biết chi tiết việc cần làm.
+ */
 class LophocController extends Controller
 {
     public function index()
     {
-        $m = $this->model("Lophoc_m");
-
-        $rows = $m->getAll();
-
-        $this->view("layout_admin", [
-            "page" => "Pages/lh_list",
-            "rows" => $rows
-        ]);
+        $this->needAdmin();
+        // TODO: TV4 – Danh sách lớp học
+        $this->_todo("Lớp học", "TV4");
     }
 
+    public function store()    { $this->needAdmin(); }
+    public function edit($id)  { $this->needAdmin(); $this->_todo("Lớp học / Sửa #$id", "TV4"); }
+    public function update()   { $this->needAdmin(); }
+    public function delete($id){ $this->needAdmin(); }
 
-    public function create()
+    private function _todo($title, $tv)
     {
-        $this->view("layout_admin", [
-            "page" => "Pages/lh_create"
-        ]);
-    }
-
-
-    public function store()
-    {
-        if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-            header(
-                "Location: " .
-                BASE_URL .
-                "/index.php?url=LophocController/index"
-            );
-            exit;
-        }
-
-        $ma = trim($_POST["ma_lop"] ?? "");
-        $ten = trim($_POST["ten_lop"] ?? "");
-        $trangthai = (int) ($_POST["trangthai"] ?? 1);
-
-        if ($ma === "" || $ten === "") {
-            die("Vui lòng nhập mã lớp và tên lớp.");
-        }
-
-        $m = $this->model("Lophoc_m");
-
-        if ($m->existsMaLop($ma)) {
-            die("Mã lớp đã tồn tại.");
-        }
-
-        $nguoi_tao = "Admin";
-
-        $m->insert(
-            $ma,
-            $ten,
-            $trangthai,
-            $nguoi_tao
-        );
-
-        header(
-            "Location: " .
-            BASE_URL .
-            "/index.php?url=LophocController/index"
-        );
-
-        exit;
+        echo "<div style='font-family:sans-serif;padding:3rem;text-align:center'>
+              <h2>🚧 $title</h2><p>Đang được <strong>$tv</strong> phát triển.</p></div>";
     }
 }

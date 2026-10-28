@@ -1,6 +1,11 @@
+# PHP vendor
+/vendor/
+
+# OS & Editor
+.DS_Store
+Thumbs.db
 .vscode/
 .idea/
+
+# Logs
 *.log
-*.frm
-*.ibd
-db.opt

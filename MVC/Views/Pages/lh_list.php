@@ -42,6 +42,12 @@
     text-align: center;
   }
 
+  .lop-hoc-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
   .lop-hoc-count strong,
   .lop-hoc-count span {
     display: block;
@@ -199,6 +205,16 @@
       gap: 8px;
     }
 
+    .lop-hoc-header-actions {
+      width: 100%;
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .lop-hoc-header-actions .btn {
+      width: 100%;
+    }
+
     .lop-hoc-count span {
       margin-top: 0;
     }
@@ -214,9 +230,12 @@
 
     <?php $lopHoc = $data["lop_hoc"] ?? []; ?>
     <?php $tongLop = is_array($lopHoc) ? count($lopHoc) : 0; ?>
-    <div class="lop-hoc-count" aria-label="<?= htmlspecialchars((string) $tongLop, ENT_QUOTES, "UTF-8") ?> lớp học">
-      <strong><?= htmlspecialchars((string) $tongLop, ENT_QUOTES, "UTF-8") ?></strong>
-      <span>Tổng số lớp</span>
+    <div class="lop-hoc-header-actions">
+      <div class="lop-hoc-count" aria-label="<?= htmlspecialchars((string) $tongLop, ENT_QUOTES, "UTF-8") ?> lớp học">
+        <strong><?= htmlspecialchars((string) $tongLop, ENT_QUOTES, "UTF-8") ?></strong>
+        <span>Tổng số lớp</span>
+      </div>
+      <a class="btn btn-primary" href="<?= htmlspecialchars(BASE_URL . "/index.php?url=LophocController/create", ENT_QUOTES, "UTF-8") ?>">Thêm lớp học</a>
     </div>
   </div>
 

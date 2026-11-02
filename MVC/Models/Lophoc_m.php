@@ -18,8 +18,30 @@ class Lophoc_m extends Database
         return $stmt->fetchAll();
     }
     public function find($id)                        { return null; }
-    public function existsMa($ma, $excId=0)          { return false; }
-    public function insert($ma, $ten, $trangthai)    { return 0; }
+    public function existsMa($ma, $excId=0)
+    {
+        $sql = "SELECT 1 FROM lop_hoc WHERE ma_lop = ?";
+        $params = [$ma];
+
+        if ((int) $excId > 0) {
+            $sql .= " AND id <> ?";
+            $params[] = (int) $excId;
+        }
+
+        $sql .= " LIMIT 1";
+        $stmt = $this->con->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchColumn() !== false;
+    }
+
+    public function insert($ma, $ten, $trangthai)
+    {
+        $stmt = $this->con->prepare(
+            "INSERT INTO lop_hoc (ma_lop, ten_lop, trangthai) VALUES (?, ?, ?)"
+        );
+        $stmt->execute([$ma, $ten, $trangthai]);
+        return (int) $this->con->lastInsertId();
+    }
     public function update($id, $ma, $ten, $trangthai) {}
     public function delete($id) {}
 }

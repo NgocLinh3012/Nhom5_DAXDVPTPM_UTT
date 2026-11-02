@@ -79,11 +79,29 @@ class Cauhoi_m extends Database
         // TODO: TV2
         return null;
     }
+public function insert($mon_id, $noi_dung, $a, $b, $c, $d, $dap_an_dung, $diem, $giai_thich, $loai, $kich_hoat)
+{
+    $sql = "INSERT INTO cau_hoi
+        (mon_id, noi_dung, dap_an_a, dap_an_b, dap_an_c, dap_an_d,
+         dap_an_dung, diem, giai_thich, loai, kich_hoat)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-    public function insert($mon_id, $noi_dung, $a, $b, $c, $d, $dap_an_dung, $diem, $giai_thich, $loai, $kich_hoat)
-    {
-        // TODO: TV2
-    }
+    $st = $this->con->prepare($sql);
+
+    return $st->execute([
+        $mon_id,
+        $noi_dung,
+        $a,
+        $b,
+        $c,
+        $d,
+        $dap_an_dung,
+        $diem,
+        $giai_thich,
+        $loai,
+        $kich_hoat
+    ]);
+}
 
     public function updateBasic($id, $mon_id, $noi_dung, $a, $b, $c, $d, $dap_an_dung, $diem, $giai_thich, $loai, $kich_hoat)
     {

@@ -6,9 +6,16 @@ $mon_id = (int) ($data["mon_id"] ?? 0);
 $q = $data["q"] ?? "";
 ?>
 
+
 <div class="page-head compact">
     <div class="page-title">QUẢN LÝ CÂU HỎI</div>
+
+    <a href="<?= BASE_URL ?>/index.php?url=CauhoiController/create"
+       class="btn btn-primary">
+        + Thêm câu hỏi
+    </a>
 </div>
+
 
 <div class="box">
     <table class="tbl">

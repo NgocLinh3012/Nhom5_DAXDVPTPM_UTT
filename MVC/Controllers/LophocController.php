@@ -8,8 +8,21 @@ class LophocController extends Controller
     public function index()
     {
         $this->needAdmin();
-        // TODO: TV4 – Danh sách lớp học
-        $this->_todo("Lớp học", "TV4");
+
+        try {
+            $lopHocModel = $this->model("Lophoc_m");
+            $lopHoc = $lopHocModel->getAll();
+            $this->view("layout_admin", [
+                "page" => "Pages/lh_list",
+                "lop_hoc" => $lopHoc,
+            ]);
+        } catch (PDOException $e) {
+            $this->view("layout_admin", [
+                "page" => "Pages/lh_list",
+                "lop_hoc" => [],
+                "err" => "Không thể tải danh sách lớp học.",
+            ]);
+        }
     }
 
     public function store()    { $this->needAdmin(); }

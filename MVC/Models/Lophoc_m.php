@@ -7,9 +7,16 @@
  */
 class Lophoc_m extends Database
 {
-    // TODO: TV4 – Implement
-
-    public function getAll()                         { return []; }
+    public function getAll()
+    {
+        $stmt = $this->con->prepare(
+            "SELECT id, ma_lop, ten_lop, trangthai
+             FROM lop_hoc
+             ORDER BY id ASC"
+        );
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
     public function find($id)                        { return null; }
     public function existsMa($ma, $excId=0)          { return false; }
     public function insert($ma, $ten, $trangthai)    { return 0; }

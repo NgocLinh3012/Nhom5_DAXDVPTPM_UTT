@@ -146,19 +146,43 @@ public function delete($id)
 
     return $st->execute([(int) $id]);
 }
-    public function checkExist($mon_id, $noi_dung)
-    {
-        // TODO: TV2
-        return false;
-    }
+   public function checkExist($mon_id, $noi_dung)
+{
+    $sql = "SELECT COUNT(*) FROM cau_hoi
+            WHERE mon_id = ? AND noi_dung = ?";
 
+    $st = $this->con->prepare($sql);
+
+    $st->execute([
+        (int) $mon_id,
+        trim($noi_dung)
+    ]);
+
+    return (int) $st->fetchColumn() > 0;
+}
     /**
      * TV3 GỌI METHOD NÀY để lấy câu hỏi khi tạo đề.
      * TV2 phải implement đúng signature này.
      */
-    public function getByMonAndLoai($mon_id, $loai, $limit)
-    {
-        // TODO: TV2 – Trả về mảng ['id', 'noi_dung', 'loai', ...]
-        return [];
-    }
+   public function getByMonAndLoai($mon_id, $loai, $limit)
+{
+    $limit = max(1, (int) $limit);
+
+    $sql = "SELECT *
+            FROM cau_hoi
+            WHERE mon_id = ?
+              AND loai = ?
+              AND kich_hoat = 1
+            ORDER BY RAND()
+            LIMIT $limit";
+
+    $st = $this->con->prepare($sql);
+
+    $st->execute([
+        (int) $mon_id,
+        $loai
+    ]);
+
+    return $st->fetchAll();
+}
 }

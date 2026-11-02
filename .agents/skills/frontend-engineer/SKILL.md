@@ -1,5 +1,5 @@
 ---
-name: frontend-engineer-tv5
+name: frontend-engineer
 description: Hỗ trợ phát triển giao diện Frontend cho module làm bài thi TV5 trong dự án Nhom5_DAXDVPTPM_UTT.
 ---
 

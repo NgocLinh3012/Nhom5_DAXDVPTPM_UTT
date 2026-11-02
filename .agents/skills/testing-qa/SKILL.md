@@ -1,5 +1,5 @@
 ---
-name: testing-qa-tv5
+name: testing-qa
 description: Hỗ trợ kiểm thử, đánh giá chất lượng và phát hiện lỗi trong module làm bài thi TV5.
 ---
 

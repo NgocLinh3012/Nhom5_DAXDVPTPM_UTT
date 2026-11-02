@@ -1,16 +1,45 @@
 <?php
-/**
- * VIEW: Sửa Lớp học | THÀNH VIÊN: TV4
- * FILE NÀY TV4 ĐƯỢC SỬA TỰ DO.
- * Biến $data được extract() từ Controller – xem Controller tương ứng.
- */
+$lh=$data["lh"];
+$msg=$data["msg"] ?? "";
+$err=$data["err"] ?? "";
 ?>
-<div class="container-fluid py-4">
-  <div class="text-center py-5">
-    <div style="font-size:3rem">🚧</div>
-    <h3 class="mt-3">Sửa Lớp học</h3>
-    <p class="text-muted">Đang được <strong>TV4</strong> phát triển.</p>
-    <hr class="my-4 w-50 mx-auto">
-    <small class="text-secondary">File: Pages/lh_edit.php</small>
+
+<?php if($err): ?><div class="alert err"><?=htmlspecialchars($err)?></div><?php endif; ?>
+<?php if($msg): ?><div class="alert ok"><?=htmlspecialchars($msg)?></div><?php endif; ?>
+
+<div class="panel">
+  <div class="panel-title">✏️ SỬA LỚP HỌC</div>
+  <div class="panel-actions">
+    <a class="btn-green" href="<?=BASE_URL?>/index.php?url=LophocController/index">Quay lại</a>
   </div>
+</div>
+
+<div class="box" style="padding:14px">
+  <form method="post" action="<?=BASE_URL?>/index.php?url=LophocController/update">
+    <input type="hidden" name="id" value="<?=$lh["id"]?>">
+
+    <div class="row2">
+      <div>
+        <label>Mã lớp</label>
+        <input name="ma_lop" value="<?=htmlspecialchars($lh["ma_lop"])?>" required>
+      </div>
+      <div>
+        <label>Tên lớp</label>
+        <input name="ten_lop" value="<?=htmlspecialchars($lh["ten_lop"])?>" required>
+      </div>
+    </div>
+
+    <div class="row2">
+      <div>
+        <label>Trạng thái</label>
+        <select name="trangthai">
+          <option value="1" <?=((int)$lh["trangthai"]===1?'selected':'')?>>Yes</option>
+          <option value="0" <?=((int)$lh["trangthai"]===0?'selected':'')?>>No</option>
+        </select>
+      </div>
+      <div></div>
+    </div>
+
+    <button class="btn-green" type="submit">Lưu</button>
+  </form>
 </div>

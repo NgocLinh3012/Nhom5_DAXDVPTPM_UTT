@@ -32,6 +32,7 @@ $q = $data["q"] ?? "";
                 <th>Điểm</th>
                 <th>Loại</th>
                 <th>Kích hoạt</th>
+                <th>Thao tác</th>
             </tr>
         </thead>
         <tbody>
@@ -46,9 +47,16 @@ $q = $data["q"] ?? "";
                     <td><?= htmlspecialchars($r["dap_an_d"]) ?></td>
                     <td><?= htmlspecialchars($r["dap_an_dung"]) ?></td>
                     <td><?= (int) $r["diem"] ?></td>
-                    <td><?= htmlspecialchars($r["loai"] ?? "") ?></td>
-                    <td><?= (int) $r["kich_hoat"] === 1 ? "Yes" : "No" ?></td>
-                </tr>
+<td><?= htmlspecialchars($r["loai"] ?? "") ?></td>
+<td><?= (int) $r["kich_hoat"] === 1 ? "Yes" : "No" ?></td>
+
+<td>
+    <a href="<?= BASE_URL ?>/index.php?url=CauhoiController/edit/<?= (int) $r["id"] ?>"
+       class="btn btn-primary btn-sm">
+        Sửa
+    </a>
+</td>
+</tr>
             <?php endforeach; ?>
         </tbody>
     </table>

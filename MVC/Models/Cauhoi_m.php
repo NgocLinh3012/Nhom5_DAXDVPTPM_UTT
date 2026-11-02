@@ -73,12 +73,15 @@ class Cauhoi_m extends Database
 
     return (int) ($st->fetch()["c"] ?? 0);
 }
+public function find($id)
+{
+    $sql = "SELECT * FROM cau_hoi WHERE id = ?";
 
-    public function find($id)
-    {
-        // TODO: TV2
-        return null;
-    }
+    $st = $this->con->prepare($sql);
+    $st->execute([(int) $id]);
+
+    return $st->fetch();
+}
 public function insert($mon_id, $noi_dung, $a, $b, $c, $d, $dap_an_dung, $diem, $giai_thich, $loai, $kich_hoat)
 {
     $sql = "INSERT INTO cau_hoi
@@ -102,12 +105,39 @@ public function insert($mon_id, $noi_dung, $a, $b, $c, $d, $dap_an_dung, $diem, 
         $kich_hoat
     ]);
 }
+public function updateBasic($id, $mon_id, $noi_dung, $a, $b, $c, $d, $dap_an_dung, $diem, $giai_thich, $loai, $kich_hoat)
+{
+    $sql = "UPDATE cau_hoi SET
+        mon_id = ?,
+        noi_dung = ?,
+        dap_an_a = ?,
+        dap_an_b = ?,
+        dap_an_c = ?,
+        dap_an_d = ?,
+        dap_an_dung = ?,
+        diem = ?,
+        giai_thich = ?,
+        loai = ?,
+        kich_hoat = ?
+        WHERE id = ?";
 
-    public function updateBasic($id, $mon_id, $noi_dung, $a, $b, $c, $d, $dap_an_dung, $diem, $giai_thich, $loai, $kich_hoat)
-    {
-        // TODO: TV2
-    }
+    $st = $this->con->prepare($sql);
 
+    return $st->execute([
+        $mon_id,
+        $noi_dung,
+        $a,
+        $b,
+        $c,
+        $d,
+        $dap_an_dung,
+        $diem,
+        $giai_thich,
+        $loai,
+        $kich_hoat,
+        (int) $id
+    ]);
+}
     public function delete($id)
     {
         // TODO: TV2

@@ -97,4 +97,66 @@ public function store()
     exit;
 }
 
+public function edit($id)
+{
+    $this->needAdmin();
+
+    $mons = $this->model("Monthi_m")->getAll();
+    $ch = $this->model("Cauhoi_m")->find((int) $id);
+
+    if (!$ch) {
+        die("Không tìm thấy câu hỏi!");
+    }
+
+    $this->view("layout_admin", [
+        "page" => "Pages/ch_edit",
+        "mons" => $mons,
+        "ch" => $ch,
+        "err" => $this->getFlash("err"),
+    ]);
+}
+
+public function update()
+{
+    $this->needAdmin();
+
+    $id = (int) ($_POST["id"] ?? 0);
+    $mon_id = (int) ($_POST["mon_id"] ?? 0);
+    $nd = trim($_POST["noi_dung"] ?? "");
+    $a = trim($_POST["a"] ?? "");
+    $b = trim($_POST["b"] ?? "");
+    $c = trim($_POST["c"] ?? "");
+    $d = trim($_POST["d"] ?? "");
+    $dad = strtoupper(trim($_POST["dap_an_dung"] ?? "A"));
+    $diem = (int) ($_POST["diem"] ?? 1);
+    $gt = trim($_POST["giai_thich"] ?? "");
+    $loai = trim($_POST["loai"] ?? "D");
+    $kich = (int) ($_POST["kich_hoat"] ?? 1);
+
+    if ($id <= 0 || $mon_id <= 0 || $nd === "" ||
+        $a === "" || $b === "" || $c === "" || $d === "") {
+
+        $this->flash("err", "Không được để trống!");
+
+        header("Location: " . BASE_URL .
+            "/index.php?url=CauhoiController/edit/" . $id);
+        exit;
+    }
+
+    if (!in_array($dad, ["A", "B", "C", "D"], true)) {
+        $dad = "A";
+    }
+
+    $this->model("Cauhoi_m")->updateBasic(
+        $id, $mon_id, $nd, $a, $b, $c, $d,
+        $dad, $diem, $gt, $loai, $kich
+    );
+
+    $this->flash("msg", "Đã cập nhật câu hỏi!");
+
+    header("Location: " . BASE_URL .
+        "/index.php?url=CauhoiController/index&mon_id=" . $mon_id);
+    exit;
+}
+
     }

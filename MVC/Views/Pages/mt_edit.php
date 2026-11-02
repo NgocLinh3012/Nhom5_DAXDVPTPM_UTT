@@ -1,16 +1,39 @@
 <?php
-/**
- * VIEW: Sửa Môn thi | THÀNH VIÊN: TV3
- * FILE NÀY TV3 ĐƯỢC SỬA TỰ DO.
- * Biến $data được extract() từ Controller – xem Controller tương ứng.
- */
+$mon = $data["mon"];
+$err = $data["err"] ?? "";
 ?>
-<div class="container-fluid py-4">
-  <div class="text-center py-5">
-    <div style="font-size:3rem">🚧</div>
-    <h3 class="mt-3">Sửa Môn thi</h3>
-    <p class="text-muted">Đang được <strong>TV3</strong> phát triển.</p>
-    <hr class="my-4 w-50 mx-auto">
-    <small class="text-secondary">File: Pages/mt_edit.php</small>
-  </div>
+<?php if ($err): ?>
+    <div class="alert err">
+        <?= htmlspecialchars($err) ?>
+    </div>
+<?php endif; ?>
+
+<div class="page-head">
+    <div class="page-title">
+        <span>SỬA MÔN THI</span>
+    </div>
+    <div class="page-actions">
+        <a href="<?= BASE_URL ?>/index.php?url=MonthiController/index" class="btn-gray">← Quay lại</a>
+    </div>
+</div>
+
+<div class="box" style="padding:20px;max-width:500px">
+    <form method="post" action="<?= BASE_URL ?>/index.php?url=MonthiController/update">
+        <input type="hidden" name="id" value="<?= $mon["id"] ?>">
+
+        <div style="margin-bottom:16px">
+            <label>Mã môn</label>
+            <input type="text" name="ma_mon" value="<?= htmlspecialchars($mon["ma_mon"]) ?>" required>
+        </div>
+
+        <div style="margin-bottom:16px">
+            <label>Tên môn thi</label>
+            <input type="text" name="ten_mon" value="<?= htmlspecialchars($mon["ten_mon"]) ?>" required>
+        </div>
+
+        <div style="display:flex;gap:12px">
+            <a href="<?= BASE_URL ?>/index.php?url=MonthiController/index" class="btn-gray">Hủy</a>
+            <button type="submit" class="btn-green">Cập nhật</button>
+        </div>
+    </form>
 </div>

@@ -85,7 +85,19 @@ public function store()
         $dad = "A";
     }
 
-    $this->model("Cauhoi_m")->insert(
+$m = $this->model("Cauhoi_m");
+
+if ($m->checkExist($mon_id, $nd)) {
+    $this->flash(
+        "err",
+        "Câu hỏi này đã tồn tại trong môn thi!"
+    );
+
+    header("Location: " . BASE_URL .
+        "/index.php?url=CauhoiController/create");
+    exit;
+}
+    $m->insert(
         $mon_id, $nd, $a, $b, $c, $d,
         $dad, $diem, $gt, $loai, $kich
     );

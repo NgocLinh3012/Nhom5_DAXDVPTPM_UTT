@@ -55,6 +55,19 @@ $q = $data["q"] ?? "";
        class="btn btn-primary btn-sm">
         Sửa
     </a>
+
+    <form action="<?= BASE_URL ?>/index.php?url=CauhoiController/delete"
+          method="POST"
+          style="display:inline;"
+          onsubmit="return confirm('Bạn có chắc muốn xóa câu hỏi này không?');">
+
+        <input type="hidden" name="id"
+               value="<?= (int) $r["id"] ?>">
+
+        <button type="submit" class="btn btn-danger btn-sm">
+            Xóa
+        </button>
+    </form>
 </td>
 </tr>
             <?php endforeach; ?>

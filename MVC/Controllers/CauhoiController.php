@@ -158,5 +158,40 @@ public function update()
         "/index.php?url=CauhoiController/index&mon_id=" . $mon_id);
     exit;
 }
+public function delete()
+{
+    $this->needAdmin();
 
+    if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+        http_response_code(405);
+        exit("Phương thức không hợp lệ!");
+    }
+
+    $id = (int) ($_POST["id"] ?? 0);
+
+    if ($id <= 0) {
+        $this->flash("err", "ID câu hỏi không hợp lệ!");
+    } else {
+        $m = $this->model("Cauhoi_m");
+        $ch = $m->find($id);
+
+        if (!$ch) {
+            $this->flash("err", "Không tìm thấy câu hỏi!");
+        } else {
+            try {
+                $m->delete($id);
+                $this->flash("msg", "Đã xóa câu hỏi!");
+            } catch (PDOException $e) {
+                $this->flash(
+                    "err",
+                    "Không thể xóa câu hỏi vì có dữ liệu liên quan!"
+                );
+            }
+        }
+    }
+
+    header("Location: " . BASE_URL .
+        "/index.php?url=CauhoiController/index");
+    exit;
+}
     }

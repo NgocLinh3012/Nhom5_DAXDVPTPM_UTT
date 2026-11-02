@@ -138,11 +138,14 @@ public function updateBasic($id, $mon_id, $noi_dung, $a, $b, $c, $d, $dap_an_dun
         (int) $id
     ]);
 }
-    public function delete($id)
-    {
-        // TODO: TV2
-    }
+public function delete($id)
+{
+    $sql = "DELETE FROM cau_hoi WHERE id = ?";
 
+    $st = $this->con->prepare($sql);
+
+    return $st->execute([(int) $id]);
+}
     public function checkExist($mon_id, $noi_dung)
     {
         // TODO: TV2

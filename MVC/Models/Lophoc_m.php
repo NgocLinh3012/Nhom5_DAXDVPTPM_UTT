@@ -17,7 +17,17 @@ class Lophoc_m extends Database
         $stmt->execute();
         return $stmt->fetchAll();
     }
-    public function find($id)                        { return null; }
+    public function find($id)
+    {
+        $stmt = $this->con->prepare(
+            "SELECT id, ma_lop, ten_lop, trangthai
+             FROM lop_hoc
+             WHERE id = ?
+             LIMIT 1"
+        );
+        $stmt->execute([(int) $id]);
+        return $stmt->fetch() ?: null;
+    }
     public function existsMa($ma, $excId=0)
     {
         $sql = "SELECT 1 FROM lop_hoc WHERE ma_lop = ?";
@@ -42,6 +52,14 @@ class Lophoc_m extends Database
         $stmt->execute([$ma, $ten, $trangthai]);
         return (int) $this->con->lastInsertId();
     }
-    public function update($id, $ma, $ten, $trangthai) {}
+    public function update($id, $ma, $ten, $trangthai)
+    {
+        $stmt = $this->con->prepare(
+            "UPDATE lop_hoc
+             SET ma_lop = ?, ten_lop = ?, trangthai = ?
+             WHERE id = ?"
+        );
+        return $stmt->execute([(string) $ma, (string) $ten, (int) $trangthai, (int) $id]);
+    }
     public function delete($id) {}
 }

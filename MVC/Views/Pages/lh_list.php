@@ -168,6 +168,20 @@
     color: #cbd5e1;
   }
 
+  .lop-hoc-actions {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .lop-hoc-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
   .lop-hoc-empty {
     padding: 54px 24px;
     border-top: 1px solid var(--border);
@@ -245,6 +259,12 @@
     </div>
   <?php endif; ?>
 
+  <?php if (!empty($data["msg"])): ?>
+    <div class="alert alert-success">
+      <?= htmlspecialchars((string) $data["msg"], ENT_QUOTES, "UTF-8") ?>
+    </div>
+  <?php endif; ?>
+
   <section class="lop-hoc-card" aria-labelledby="lop-hoc-table-title">
     <div class="lop-hoc-card-header">
       <h2 id="lop-hoc-table-title">Danh mục lớp học</h2>
@@ -263,6 +283,7 @@
               <th scope="col">Mã lớp</th>
               <th scope="col">Tên lớp</th>
               <th scope="col">Trạng thái</th>
+              <th scope="col">Thao tác</th>
             </tr>
           </thead>
           <tbody>
@@ -278,6 +299,12 @@
                   <?php else: ?>
                     <span class="lop-hoc-status lop-hoc-status-unknown">Không xác định</span>
                   <?php endif; ?>
+                </td>
+                <td class="lop-hoc-actions">
+                  <a
+                    class="btn btn-secondary lop-hoc-edit-btn"
+                    href="<?= htmlspecialchars(BASE_URL . "/index.php?url=LophocController/edit/" . rawurlencode((string) ($lop["id"] ?? "")), ENT_QUOTES, "UTF-8") ?>"
+                  >Sửa</a>
                 </td>
               </tr>
             <?php endforeach; ?>

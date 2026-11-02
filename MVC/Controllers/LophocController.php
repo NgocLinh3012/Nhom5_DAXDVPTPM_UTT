@@ -5,6 +5,9 @@ class LophocController extends Controller
   public function index()
   {
     $this->needAdmin();
+    if (empty($_SESSION["lophoc_delete_token"])) {
+      $_SESSION["lophoc_delete_token"] = bin2hex(random_bytes(32));
+    }
 
     $q = trim($_GET["q"] ?? "");
 
@@ -27,6 +30,7 @@ class LophocController extends Controller
       "totalPages" => $totalPages,
       "limit" => $limit,
       "total" => $total,
+      "deleteToken" => $_SESSION["lophoc_delete_token"],
       "msg" => $this->getFlash("msg"),
       "err" => $this->getFlash("err")
     ]);
@@ -75,12 +79,44 @@ class LophocController extends Controller
     exit;
   }
 
-  public function delete($id)
+  public function delete()
   {
     $this->needAdmin();
-    $id = (int) $id;
 
-    $this->model("Lophoc_m")->delete($id);
+    if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+      http_response_code(405);
+      exit("Phương thức không hợp lệ!");
+    }
+
+    $token = (string) ($_POST["_csrf_token"] ?? "");
+    $sessionToken = (string) ($_SESSION["lophoc_delete_token"] ?? "");
+    if ($sessionToken === "" || !hash_equals($sessionToken, $token)) {
+      $this->flash("err", "Phiên xóa không hợp lệ. Vui lòng thử lại!");
+      header("Location: " . BASE_URL . "/index.php?url=LophocController/index");
+      exit;
+    }
+
+    $id = (int) ($_POST["id"] ?? 0);
+    if ($id <= 0) {
+      $this->flash("err", "ID lớp học không hợp lệ!");
+      header("Location: " . BASE_URL . "/index.php?url=LophocController/index");
+      exit;
+    }
+
+    $m = $this->model("Lophoc_m");
+    if (!$m->find($id)) {
+      $this->flash("err", "Không tìm thấy lớp học!");
+      header("Location: " . BASE_URL . "/index.php?url=LophocController/index");
+      exit;
+    }
+
+    if (!$m->canDelete($id)) {
+      $this->flash("err", "Không thể xóa lớp học đang có học viên, người dùng hoặc phòng thi liên quan!");
+      header("Location: " . BASE_URL . "/index.php?url=LophocController/index");
+      exit;
+    }
+
+    $m->delete($id);
     $this->flash("msg", "Đã xóa lớp học và dữ liệu liên quan!");
     header("Location: " . BASE_URL . "/index.php?url=LophocController/index");
     exit;

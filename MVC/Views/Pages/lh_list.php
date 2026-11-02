@@ -109,7 +109,7 @@ $q = $data["q"] ?? "";
             <a class="action-btn delete"
                href="#"
                onclick="confirmDelete(
-                 '<?= BASE_URL ?>/index.php?url=LophocController/delete/<?= (int)($r["id"] ?? 0) ?>',
+                 <?= (int)($r["id"] ?? 0) ?>,
                  'Xóa lớp này?'
                ); return false;">
               Xóa
@@ -140,6 +140,14 @@ $q = $data["q"] ?? "";
     <?php endfor; ?>
   </div>
 </div>
+
+<form id="delete-class-form"
+      method="post"
+      action="<?= BASE_URL ?>/index.php?url=LophocController/delete">
+  <input type="hidden" name="id" id="delete-class-id" value="">
+  <input type="hidden" name="_csrf_token"
+         value="<?= htmlspecialchars((string)($data["deleteToken"] ?? ""), ENT_QUOTES, 'UTF-8') ?>">
+</form>
 
 <!-- MODAL IMPORT -->
 <div id="modal" class="modal">
@@ -188,7 +196,7 @@ $q = $data["q"] ?? "";
     document.getElementById('modal').classList.remove('show');
   }
 
-  function confirmDelete(url, message) {
+  function confirmDelete(id, message) {
     Swal.fire({
       icon: 'warning',
       title: 'Xác nhận xóa',
@@ -200,7 +208,8 @@ $q = $data["q"] ?? "";
       cancelButtonColor: '#64748b'
     }).then((result) => {
       if (result.isConfirmed) {
-        window.location.href = url;
+        document.getElementById('delete-class-id').value = id;
+        document.getElementById('delete-class-form').submit();
       }
     });
   }

@@ -1,16 +1,76 @@
+
 <?php
-/**
- * VIEW: Danh sách Câu hỏi | THÀNH VIÊN: TV2
- * FILE NÀY TV2 ĐƯỢC SỬA TỰ DO.
- * Biến $data được extract() từ Controller – xem Controller tương ứng.
- */
+$rows = $data["rows"] ?? [];
+$mons = $data["mons"] ?? [];
+$mon_id = (int) ($data["mon_id"] ?? 0);
+$q = $data["q"] ?? "";
 ?>
-<div class="container-fluid py-4">
-  <div class="text-center py-5">
-    <div style="font-size:3rem">🚧</div>
-    <h3 class="mt-3">Danh sách Câu hỏi</h3>
-    <p class="text-muted">Đang được <strong>TV2</strong> phát triển.</p>
-    <hr class="my-4 w-50 mx-auto">
-    <small class="text-secondary">File: Pages/ch_list.php</small>
-  </div>
+
+
+<div class="page-head compact">
+    <div class="page-title">QUẢN LÝ CÂU HỎI</div>
+
+    <a href="<?= BASE_URL ?>/index.php?url=CauhoiController/create"
+       class="btn btn-primary">
+        + Thêm câu hỏi
+    </a>
+</div>
+
+
+<div class="box">
+    <table class="tbl">
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Môn thi</th>
+                <th>Câu hỏi</th>
+                <th>A</th>
+                <th>B</th>
+                <th>C</th>
+                <th>D</th>
+                <th>Đáp án đúng</th>
+                <th>Điểm</th>
+                <th>Loại</th>
+                <th>Kích hoạt</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($rows as $i => $r): ?>
+                <tr>
+                    <td><?= $i + 1 ?></td>
+                    <td><?= htmlspecialchars($r["ten_mon"] ?? "") ?></td>
+                    <td><?= htmlspecialchars($r["noi_dung"]) ?></td>
+                    <td><?= htmlspecialchars($r["dap_an_a"]) ?></td>
+                    <td><?= htmlspecialchars($r["dap_an_b"]) ?></td>
+                    <td><?= htmlspecialchars($r["dap_an_c"]) ?></td>
+                    <td><?= htmlspecialchars($r["dap_an_d"]) ?></td>
+                    <td><?= htmlspecialchars($r["dap_an_dung"]) ?></td>
+                    <td><?= (int) $r["diem"] ?></td>
+<td><?= htmlspecialchars($r["loai"] ?? "") ?></td>
+<td><?= (int) $r["kich_hoat"] === 1 ? "Yes" : "No" ?></td>
+
+<td>
+    <a href="<?= BASE_URL ?>/index.php?url=CauhoiController/edit/<?= (int) $r["id"] ?>"
+       class="btn btn-primary btn-sm">
+        Sửa
+    </a>
+
+    <form action="<?= BASE_URL ?>/index.php?url=CauhoiController/delete"
+          method="POST"
+          style="display:inline;"
+          onsubmit="return confirm('Bạn có chắc muốn xóa câu hỏi này không?');">
+
+        <input type="hidden" name="id"
+               value="<?= (int) $r["id"] ?>">
+
+        <button type="submit" class="btn btn-danger btn-sm">
+            Xóa
+        </button>
+    </form>
+</td>
+</tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
 </div>

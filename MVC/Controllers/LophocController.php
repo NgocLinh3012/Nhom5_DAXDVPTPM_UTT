@@ -1,286 +1,193 @@
 <?php
-/**
- * MODULE: Lớp học | THÀNH VIÊN: TV4
- * Xem README.md → Mục TV4 để biết chi tiết việc cần làm.
- */
 class LophocController extends Controller
 {
-    public function index()
-    {
-        $this->needAdmin();
 
-        try {
-            $lopHocModel = $this->model("Lophoc_m");
-            $lopHoc = $lopHocModel->getAll();
-            $this->view("layout_admin", [
-                "page" => "Pages/lh_list",
-                "lop_hoc" => $lopHoc,
-                "msg" => $this->getFlash("msg"),
-                "err" => $this->getFlash("err"),
-            ]);
-        } catch (PDOException $e) {
-            $this->view("layout_admin", [
-                "page" => "Pages/lh_list",
-                "lop_hoc" => [],
-                "err" => "Không thể tải danh sách lớp học.",
-            ]);
-        }
+  public function index()
+  {
+    $this->needAdmin();
+
+    $q = trim($_GET["q"] ?? "");
+
+    $page = (int) ($_GET["page"] ?? 1);
+    if ($page < 1)
+      $page = 1;
+    $limit = 50;
+    $offset = ($page - 1) * $limit;
+
+    $m = $this->model("Lophoc_m");
+    $rows = $m->listPaged($q, $limit, $offset);
+    $total = $m->count($q);
+    $totalPages = ceil($total / $limit);
+
+    $this->view("layout_admin", [
+      "page" => "Pages/lh_list",
+      "rows" => $rows,
+      "q" => $q,
+      "currPage" => $page,
+      "totalPages" => $totalPages,
+      "limit" => $limit,
+      "total" => $total,
+      "msg" => $this->getFlash("msg"),
+      "err" => $this->getFlash("err")
+    ]);
+  }
+
+
+  public function edit($id)
+  {
+    $this->needAdmin();
+    $m = $this->model("Lophoc_m");
+    $lh = $m->find((int) $id);
+    if (!$lh)
+      die("Không tìm thấy lớp");
+    $this->view("layout_admin", [
+      "page" => "Pages/lh_edit",
+      "lh" => $lh,
+      "msg" => $this->getFlash("msg"),
+      "err" => $this->getFlash("err")
+    ]);
+  }
+
+  public function update()
+  {
+    $this->needAdmin();
+    $id = (int) ($_POST["id"] ?? 0);
+    $ma = trim($_POST["ma_lop"] ?? "");
+    $ten = trim($_POST["ten_lop"] ?? "");
+    $trangthai = (int) ($_POST["trangthai"] ?? 1);
+
+    $m = $this->model("Lophoc_m");
+
+    if ($ma === "" || $ten === "") {
+      $this->flash("err", "Mã lớp và Tên lớp không được để trống!");
+      header("Location: " . BASE_URL . "/index.php?url=LophocController/edit/" . $id);
+      exit;
+    }
+    if ($m->existsMaLop($ma, $id)) {
+      $this->flash("err", "Mã lớp đã tồn tại!");
+      header("Location: " . BASE_URL . "/index.php?url=LophocController/edit/" . $id);
+      exit;
     }
 
-    public function create()
-    {
-        $this->needAdmin();
-        $this->ensureCsrfToken();
+    $m->updateBasic($id, $ma, $ten, $trangthai);
+    $this->flash("msg", "Cập nhật lớp học thành công!");
+    header("Location: " . BASE_URL . "/index.php?url=LophocController/index");
+    exit;
+  }
 
-        $this->view("layout_admin", [
-            "page" => "Pages/lh_create",
-            "csrf_token" => $_SESSION["lop_hoc_csrf_token"],
-            "old" => [],
-            "errors" => [],
-        ]);
+  public function delete($id)
+  {
+    $this->needAdmin();
+    $id = (int) $id;
+
+    $this->model("Lophoc_m")->delete($id);
+    $this->flash("msg", "Đã xóa lớp học và dữ liệu liên quan!");
+    header("Location: " . BASE_URL . "/index.php?url=LophocController/index");
+    exit;
+  }
+  public function create()
+  {
+    $this->needAdmin();
+    $this->view("layout_admin", [
+      "page" => "Pages/lh_create",
+      "msg" => $this->getFlash("msg"),
+      "err" => $this->getFlash("err")
+    ]);
+  }
+
+  public function store()
+  {
+    $this->needAdmin();
+    $ma = trim($_POST["ma_lop"] ?? "");
+    $ten = trim($_POST["ten_lop"] ?? "");
+    $trangthai = (int) ($_POST["trangthai"] ?? 1);
+
+    $m = $this->model("Lophoc_m");
+    if ($ma === "" || $ten === "") {
+      $this->flash("err", "Vui lòng nhập Mã lớp và Tên lớp!");
+      header("Location: " . BASE_URL . "/index.php?url=LophocController/create");
+      exit;
+    }
+    if ($m->existsMaLop($ma, 0)) {
+      $this->flash("err", "Mã lớp đã tồn tại!");
+      header("Location: " . BASE_URL . "/index.php?url=LophocController/create");
+      exit;
     }
 
-    public function store()
-    {
-        $this->needAdmin();
+    $nguoi_tao = $_SESSION["user"]["hoten"] ?? "Admin";
+    $m->insert($ma, $ten, $trangthai, $nguoi_tao);
 
-        if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-            http_response_code(405);
-            header("Allow: POST");
-            exit;
-        }
+    $this->flash("msg", "Đã thêm lớp học!");
+    header("Location: " . BASE_URL . "/index.php?url=LophocController/index");
+    exit;
+  }
 
-        if (!$this->validateCsrfToken($_POST["csrf_token"] ?? null)) {
-            http_response_code(403);
-            exit("Yêu cầu không hợp lệ.");
-        }
 
-        $maLop = trim((string) ($_POST["ma_lop"] ?? ""));
-        $tenLop = trim((string) ($_POST["ten_lop"] ?? ""));
-        $trangthai = (string) ($_POST["trangthai"] ?? "1");
-        $old = [
-            "ma_lop" => $maLop,
-            "ten_lop" => $tenLop,
-            "trangthai" => $trangthai,
-        ];
-        $errors = [];
+  public function template()
+  {
+    $this->needAdmin();
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename=lophoc_mau.csv');
+    echo "\xEF\xBB\xBF";
+    echo "ma_lop,ten_lop,trangthai\n";
+    echo "LOP01,Lớp 10A1,1\n";
+    echo "LOP02,Lớp 10A2,1\n";
+    echo "LOP03,Lớp 11A1,0\n";
+    exit;
+  }
 
-        if ($maLop === "") {
-            $errors["ma_lop"] = "Mã lớp không được để trống.";
-        } elseif ($this->textLength($maLop) > 20) {
-            $errors["ma_lop"] = "Mã lớp không được vượt quá 20 ký tự.";
-        }
 
-        if ($tenLop === "") {
-            $errors["ten_lop"] = "Tên lớp không được để trống.";
-        } elseif ($this->textLength($tenLop) > 100) {
-            $errors["ten_lop"] = "Tên lớp không được vượt quá 100 ký tự.";
-        }
+  public function import()
+  {
+    $this->needAdmin();
 
-        if (!in_array($trangthai, ["0", "1"], true)) {
-            $errors["trangthai"] = "Trạng thái không hợp lệ.";
-        }
-
-        try {
-            $lopHocModel = $this->model("Lophoc_m");
-
-            if (!isset($errors["ma_lop"]) && $lopHocModel->existsMa($maLop, 0)) {
-                $errors["ma_lop"] = "Mã lớp đã tồn tại.";
-            }
-
-            if (!empty($errors)) {
-                $this->view("layout_admin", [
-                    "page" => "Pages/lh_create",
-                    "csrf_token" => $_SESSION["lop_hoc_csrf_token"],
-                    "old" => $old,
-                    "errors" => $errors,
-                ]);
-                return;
-            }
-
-            $lopHocModel->insert($maLop, $tenLop, (int) $trangthai);
-            $this->flash("msg", "Thêm lớp học thành công.");
-            header("Location: " . BASE_URL . "/index.php?url=LophocController/index");
-            exit;
-        } catch (PDOException $e) {
-            $isDuplicate = $e->getCode() === "23000";
-            if ($isDuplicate) {
-                $errors["ma_lop"] = "Mã lớp đã tồn tại.";
-            } else {
-                $errors["general"] = "Không thể thêm lớp học. Vui lòng thử lại.";
-            }
-
-            $this->view("layout_admin", [
-                "page" => "Pages/lh_create",
-                "csrf_token" => $_SESSION["lop_hoc_csrf_token"],
-                "old" => $old,
-                "errors" => $errors,
-            ]);
-        }
+    if (empty($_FILES["file"]["tmp_name"])) {
+      $this->flash("err", "Vui lòng chọn file Excel!");
+      header("Location: " . BASE_URL . "/index.php?url=LophocController/index");
+      exit;
     }
 
-    public function edit($id)
-    {
-        $this->needAdmin();
-
-        if (!is_string($id) && !is_int($id)) {
-            $this->redirectToListWithError("ID lớp học không hợp lệ.");
-            return;
-        }
-
-        $id = trim((string) $id);
-        if (!ctype_digit($id) || (int) $id <= 0) {
-            $this->redirectToListWithError("ID lớp học không hợp lệ.");
-            return;
-        }
-
-        try {
-            $lopHocModel = $this->model("Lophoc_m");
-            $lopHoc = $lopHocModel->find((int) $id);
-            if (!$lopHoc) {
-                $this->redirectToListWithError("Không tìm thấy lớp học.");
-                return;
-            }
-
-            $this->ensureCsrfToken();
-            $this->view("layout_admin", [
-                "page" => "Pages/lh_edit",
-                "lop_hoc" => $lopHoc,
-                "csrf_token" => $_SESSION["lop_hoc_csrf_token"],
-                "old" => [],
-                "errors" => [],
-            ]);
-        } catch (PDOException $e) {
-            $this->redirectToListWithError("Không thể tải thông tin lớp học.");
-        }
+    $name = $_FILES["file"]["name"] ?? "";
+    if (!preg_match('/\.csv$/i', $name)) {
+      $this->flash("err", "Chỉ hỗ trợ file Excel (.csv)!");
+      header("Location: " . BASE_URL . "/index.php?url=LophocController/index");
+      exit;
     }
 
-    public function update()
-    {
-        $this->needAdmin();
+    $m = $this->model("Lophoc_m");
+    $fh = fopen($_FILES["file"]["tmp_name"], "r");
+    $first = true;
+    $ok = 0;
+    $skip = 0;
+    $nguoi_tao = $_SESSION["user"]["hoten"] ?? "Admin";
 
-        if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-            http_response_code(405);
-            header("Allow: POST");
-            exit;
-        }
+    while (($row = fgetcsv($fh)) !== false) {
+      if ($first) {
+        $first = false;
+        continue;
+      }
 
-        if (!$this->validateCsrfToken($_POST["csrf_token"] ?? null)) {
-            http_response_code(403);
-            exit("Yêu cầu không hợp lệ.");
-        }
+      $ma = trim($row[0] ?? "");
+      $ten = trim($row[1] ?? "");
+      $trangthai = (int) ($row[2] ?? 1);
 
-        $id = trim((string) ($_POST["id"] ?? ""));
-        if (!ctype_digit($id) || (int) $id <= 0) {
-            http_response_code(422);
-            exit("ID lớp học không hợp lệ.");
-        }
+      if ($ma === "" || $ten === "") {
+        $skip++;
+        continue;
+      }
+      if ($m->existsMaLop($ma, 0)) {
+        $skip++;
+        continue;
+      }
 
-        $id = (int) $id;
-        $maLop = trim((string) ($_POST["ma_lop"] ?? ""));
-        $tenLop = trim((string) ($_POST["ten_lop"] ?? ""));
-        $trangthai = (string) ($_POST["trangthai"] ?? "");
-        $old = [
-            "id" => $id,
-            "ma_lop" => $maLop,
-            "ten_lop" => $tenLop,
-            "trangthai" => $trangthai,
-        ];
-        $errors = [];
-
-        if ($maLop === "") {
-            $errors["ma_lop"] = "Mã lớp không được để trống.";
-        } elseif ($this->textLength($maLop) > 20) {
-            $errors["ma_lop"] = "Mã lớp không được vượt quá 20 ký tự.";
-        }
-
-        if ($tenLop === "") {
-            $errors["ten_lop"] = "Tên lớp không được để trống.";
-        } elseif ($this->textLength($tenLop) > 100) {
-            $errors["ten_lop"] = "Tên lớp không được vượt quá 100 ký tự.";
-        }
-
-        if (!in_array($trangthai, ["0", "1"], true)) {
-            $errors["trangthai"] = "Trạng thái không hợp lệ.";
-        }
-
-        try {
-            $lopHocModel = $this->model("Lophoc_m");
-            $lopHoc = $lopHocModel->find($id);
-            if (!$lopHoc) {
-                $this->redirectToListWithError("Không tìm thấy lớp học.");
-                return;
-            }
-
-            if (!isset($errors["ma_lop"]) && $lopHocModel->existsMa($maLop, $id)) {
-                $errors["ma_lop"] = "Mã lớp đã tồn tại ở lớp học khác.";
-            }
-
-            if (!empty($errors)) {
-                $this->view("layout_admin", [
-                    "page" => "Pages/lh_edit",
-                    "lop_hoc" => $lopHoc,
-                    "csrf_token" => $_SESSION["lop_hoc_csrf_token"],
-                    "old" => $old,
-                    "errors" => $errors,
-                ]);
-                return;
-            }
-
-            $lopHocModel->update($id, $maLop, $tenLop, (int) $trangthai);
-            $this->flash("msg", "Cập nhật lớp học thành công.");
-            header("Location: " . BASE_URL . "/index.php?url=LophocController/index");
-            exit;
-        } catch (PDOException $e) {
-            if ($e->getCode() === "23000") {
-                $errors["ma_lop"] = "Mã lớp đã tồn tại ở lớp học khác.";
-            } else {
-                $errors["general"] = "Không thể cập nhật lớp học. Vui lòng thử lại.";
-            }
-
-            $this->view("layout_admin", [
-                "page" => "Pages/lh_edit",
-                "lop_hoc" => $lopHoc ?? [],
-                "csrf_token" => $_SESSION["lop_hoc_csrf_token"],
-                "old" => $old,
-                "errors" => $errors,
-            ]);
-        }
+      $m->insert($ma, $ten, $trangthai, $nguoi_tao);
+      $ok++;
     }
+    fclose($fh);
 
-    public function delete($id){ $this->needAdmin(); }
+    $this->flash("msg", "Import xong: thêm $ok, bỏ qua $skip dòng.");
+    header("Location: " . BASE_URL . "/index.php?url=LophocController/index");
+    exit;
+  }
 
-    private function redirectToListWithError($message)
-    {
-        $this->flash("err", $message);
-        header("Location: " . BASE_URL . "/index.php?url=LophocController/index");
-        exit;
-    }
-
-    private function _todo($title, $tv)
-    {
-        echo "<div style='font-family:sans-serif;padding:3rem;text-align:center'>
-              <h2>🚧 $title</h2><p>Đang được <strong>$tv</strong> phát triển.</p></div>";
-    }
-
-    private function ensureCsrfToken()
-    {
-        if (empty($_SESSION["lop_hoc_csrf_token"])) {
-            $_SESSION["lop_hoc_csrf_token"] = bin2hex(random_bytes(32));
-        }
-    }
-
-    private function validateCsrfToken($token)
-    {
-        $this->ensureCsrfToken();
-        return is_string($token)
-            && hash_equals($_SESSION["lop_hoc_csrf_token"], $token);
-    }
-
-    private function textLength($value)
-    {
-        return function_exists("mb_strlen")
-            ? mb_strlen($value, "UTF-8")
-            : strlen($value);
-    }
 }

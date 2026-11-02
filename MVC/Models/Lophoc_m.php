@@ -1,65 +1,171 @@
 <?php
-/**
- * MODEL: Lớp học | THÀNH VIÊN: TV4
- * FILE NÀY TV4 ĐƯỢC SỬA TỰ DO.
- *
- * TV5 gọi find() để kiểm tra trạng thái lớp khi vào thi.
- */
 class Lophoc_m extends Database
 {
-    public function getAll()
-    {
-        $stmt = $this->con->prepare(
-            "SELECT id, ma_lop, ten_lop, trangthai
-             FROM lop_hoc
-             ORDER BY id ASC"
-        );
-        $stmt->execute();
-        return $stmt->fetchAll();
-    }
-    public function find($id)
-    {
-        $stmt = $this->con->prepare(
-            "SELECT id, ma_lop, ten_lop, trangthai
-             FROM lop_hoc
-             WHERE id = ?
-             LIMIT 1"
-        );
-        $stmt->execute([(int) $id]);
-        return $stmt->fetch() ?: null;
-    }
-    public function existsMa($ma, $excId=0)
-    {
-        $sql = "SELECT 1 FROM lop_hoc WHERE ma_lop = ?";
-        $params = [$ma];
 
-        if ((int) $excId > 0) {
-            $sql .= " AND id <> ?";
-            $params[] = (int) $excId;
-        }
 
-        $sql .= " LIMIT 1";
-        $stmt = $this->con->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetchColumn() !== false;
+  public function getAll()
+  {
+    $sql = "
+      SELECT l.*,
+             (SELECT COUNT(*) FROM hoc_vien hv WHERE hv.lop_id = l.id) AS so_hoc_vien
+      FROM lop_hoc l
+      ORDER BY l.id DESC
+    ";
+    return $this->con->query($sql)->fetchAll();
+  }
+
+
+  public function find($id)
+  {
+    $st = $this->con->prepare("SELECT * FROM lop_hoc WHERE id=?");
+    $st->execute([(int) $id]);
+    return $st->fetch();
+  }
+
+
+
+  public function existsMaLop($ma_lop, $ignoreId = 0)
+  {
+    $st = $this->con->prepare("SELECT id FROM lop_hoc WHERE ma_lop=? AND id<>?");
+    $st->execute([trim($ma_lop), (int) $ignoreId]);
+    return (bool) $st->fetch();
+  }
+
+
+  public function insert($ma_lop, $ten_lop, $trangthai, $nguoi_tao)
+  {
+    $sql = "INSERT INTO lop_hoc(ma_lop, ten_lop, trangthai, nguoi_tao)
+            VALUES (?,?,?,?)";
+    $st = $this->con->prepare($sql);
+    return $st->execute([
+      trim($ma_lop),
+      trim($ten_lop),
+      (int) $trangthai,
+      trim($nguoi_tao)
+    ]);
+  }
+
+
+  public function updateBasic($id, $ma_lop, $ten_lop, $trangthai)
+  {
+    $sql = "UPDATE lop_hoc
+            SET ma_lop=?, ten_lop=?, trangthai=?
+            WHERE id=?";
+    $st = $this->con->prepare($sql);
+    return $st->execute([
+      trim($ma_lop),
+      trim($ten_lop),
+      (int) $trangthai,
+      (int) $id
+    ]);
+  }
+
+
+  public function canDelete($id)
+  {
+
+    $st = $this->con->prepare("SELECT COUNT(*) c FROM users WHERE lop_id=?");
+    $st->execute([(int) $id]);
+    if ($st->fetch()["c"] > 0)
+      return false;
+
+
+    $st = $this->con->prepare("SELECT COUNT(*) c FROM hoc_vien WHERE lop_id=?");
+    $st->execute([(int) $id]);
+    if ($st->fetch()["c"] > 0)
+      return false;
+
+
+    $st = $this->con->prepare("SELECT COUNT(*) c FROM phong_thi WHERE lop_id=?");
+    $st->execute([(int) $id]);
+    if ($st->fetch()["c"] > 0)
+      return false;
+
+    return true;
+  }
+
+
+  public function delete($id)
+  {
+    $id = (int) $id;
+
+
+    $st = $this->con->prepare("SELECT id FROM hoc_vien WHERE lop_id=?");
+    $st->execute([$id]);
+    $hvs = $st->fetchAll();
+    foreach ($hvs as $hw) {
+      $hid = (int) $hw["id"];
+
+      $bls = $this->con->prepare("SELECT id FROM bai_lam WHERE hocvien_id=?");
+      $bls->execute([$hid]);
+      $rows = $bls->fetchAll();
+      foreach ($rows as $r) {
+        $this->con->prepare("DELETE FROM bai_lam_ct WHERE bailam_id=?")->execute([(int) $r["id"]]);
+      }
+      $this->con->prepare("DELETE FROM bai_lam WHERE hocvien_id=?")->execute([$hid]);
+
+      $this->con->prepare("DELETE FROM phong_thi_hoc_vien WHERE hocvien_id=?")->execute([$hid]);
+
+      $this->con->prepare("DELETE FROM hoc_vien WHERE id=?")->execute([$hid]);
     }
 
-    public function insert($ma, $ten, $trangthai)
-    {
-        $stmt = $this->con->prepare(
-            "INSERT INTO lop_hoc (ma_lop, ten_lop, trangthai) VALUES (?, ?, ?)"
-        );
-        $stmt->execute([$ma, $ten, $trangthai]);
-        return (int) $this->con->lastInsertId();
+
+    $st = $this->con->prepare("SELECT id FROM phong_thi WHERE lop_id=?");
+    $st->execute([$id]);
+    $ps = $st->fetchAll();
+    foreach ($ps as $p) {
+      $pid = (int) $p["id"];
+      $this->con->prepare("DELETE FROM phong_thi_hoc_vien WHERE phong_id=?")->execute([$pid]);
+
+      $bls = $this->con->prepare("SELECT id FROM bai_lam WHERE phong_id=?");
+      $bls->execute([$pid]);
+      $rows = $bls->fetchAll();
+      foreach ($rows as $r) {
+        $this->con->prepare("DELETE FROM bai_lam_ct WHERE bailam_id=?")->execute([(int) $r["id"]]);
+      }
+      $this->con->prepare("DELETE FROM bai_lam WHERE phong_id=?")->execute([$pid]);
+      $this->con->prepare("DELETE FROM phong_thi WHERE id=?")->execute([$pid]);
     }
-    public function update($id, $ma, $ten, $trangthai)
-    {
-        $stmt = $this->con->prepare(
-            "UPDATE lop_hoc
-             SET ma_lop = ?, ten_lop = ?, trangthai = ?
-             WHERE id = ?"
-        );
-        return $stmt->execute([(string) $ma, (string) $ten, (int) $trangthai, (int) $id]);
-    }
-    public function delete($id) {}
+
+    $st = $this->con->prepare("DELETE FROM lop_hoc WHERE id=?");
+    return $st->execute([$id]);
+  }
+
+
+  public function search($q)
+  {
+    $q = "%" . trim($q) . "%";
+    $st = $this->con->prepare("
+      SELECT l.*,
+             (SELECT COUNT(*) FROM hoc_vien hv WHERE hv.lop_id = l.id) AS so_hoc_vien
+      FROM lop_hoc l
+      WHERE l.ma_lop LIKE ? OR l.ten_lop LIKE ?
+      ORDER BY l.id DESC
+    ");
+    $st->execute([$q, $q]);
+    return $st->fetchAll();
+  }
+
+  public function listPaged($q = "", $limit = 50, $offset = 0)
+  {
+    $q = "%" . trim($q) . "%";
+    $sql = "
+      SELECT l.*,
+             (SELECT COUNT(*) FROM hoc_vien hv WHERE hv.lop_id = l.id) AS so_hoc_vien
+      FROM lop_hoc l
+      WHERE l.ma_lop LIKE ? OR l.ten_lop LIKE ?
+      ORDER BY l.id DESC LIMIT $limit OFFSET " . (int) $offset;
+    $st = $this->con->prepare($sql);
+    $st->execute([$q, $q]);
+    return $st->fetchAll();
+  }
+
+  public function count($q = "")
+  {
+    $q = "%" . trim($q) . "%";
+    $st = $this->con->prepare("SELECT COUNT(*) c FROM lop_hoc WHERE ma_lop LIKE ? OR ten_lop LIKE ?");
+    $st->execute([$q, $q]);
+    return (int) ($st->fetch()["c"] ?? 0);
+  }
+
 }

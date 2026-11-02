@@ -19,16 +19,60 @@ class Cauhoi_m extends Database
     // Tham khảo schema bảng `cau_hoi` trong file thitracnghiem.sql
 
     public function list($mon_id, $q, $offset = 0, $limit = 50)
-    {
-        // TODO: TV2
-        return [];
-    }
+{
+    $qLike = "%" . trim($q) . "%";
+    $offset = max(0, (int) $offset);
+    $limit = max(1, (int) $limit);
 
-    public function count($mon_id, $q)
-    {
-        // TODO: TV2
-        return 0;
-    }
+    $sql = "
+        SELECT ch.*, m.ten_mon
+        FROM cau_hoi ch
+        JOIN mon_thi m ON m.id = ch.mon_id
+        WHERE (? = 0 OR ch.mon_id = ?)
+          AND (
+              ch.noi_dung LIKE ?
+              OR ch.dap_an_a LIKE ?
+              OR ch.dap_an_b LIKE ?
+              OR ch.dap_an_c LIKE ?
+              OR ch.dap_an_d LIKE ?
+          )
+        ORDER BY ch.id DESC
+        LIMIT $limit OFFSET $offset
+    ";
+
+    $st = $this->con->prepare($sql);
+    $st->execute([
+        (int) $mon_id, (int) $mon_id,
+        $qLike, $qLike, $qLike, $qLike, $qLike
+    ]);
+
+    return $st->fetchAll();
+}
+   public function count($mon_id, $q)
+{
+    $qLike = "%" . trim($q) . "%";
+
+    $sql = "
+        SELECT COUNT(*) AS c
+        FROM cau_hoi
+        WHERE (? = 0 OR mon_id = ?)
+          AND (
+              noi_dung LIKE ?
+              OR dap_an_a LIKE ?
+              OR dap_an_b LIKE ?
+              OR dap_an_c LIKE ?
+              OR dap_an_d LIKE ?
+          )
+    ";
+
+    $st = $this->con->prepare($sql);
+    $st->execute([
+        (int) $mon_id, (int) $mon_id,
+        $qLike, $qLike, $qLike, $qLike, $qLike
+    ]);
+
+    return (int) ($st->fetch()["c"] ?? 0);
+}
 
     public function find($id)
     {

@@ -8,35 +8,38 @@
  */
 class CauhoiController extends Controller
 {
-    public function index()
-    {
-        $this->needAdmin();
-        // TODO: TV2 – Danh sách câu hỏi (lọc theo môn, tìm kiếm, phân trang 50/trang)
-        $this->_todo("Câu hỏi", "TV2");
-    }
+    
+public function index()
+{
+    $this->needAdmin();
 
-    public function create()  { $this->needAdmin(); $this->_todo("Câu hỏi / Thêm mới", "TV2"); }
-    public function store()   { $this->needAdmin(); }
-    public function edit($id) { $this->needAdmin(); $this->_todo("Câu hỏi / Sửa #$id", "TV2"); }
-    public function update()  { $this->needAdmin(); }
-    public function delete($id){ $this->needAdmin(); }
+    $mon_id = (int) ($_GET["mon_id"] ?? 0);
+    $q = trim($_GET["q"] ?? "");
 
-    public function template()
-    {
-        $this->needAdmin();
-        header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename=cauhoi_mau.csv');
-        echo "\xEF\xBB\xBF";
-        echo "ma_mon,noi_dung,A,B,C,D,dap_an,diem,giai_thich,loai,kich_hoat\n";
-        echo "TOAN,2+2=?,3,4,5,6,B,1,,D,1\n";
-        exit;
-    }
+    $mons = $this->model("Monthi_m")->getAll();
 
-    public function import()  { $this->needAdmin(); }
+    $page = max(1, (int) ($_GET["page"] ?? 1));
+    $limit = 50;
+    $offset = ($page - 1) * $limit;
 
-    private function _todo($title, $tv)
-    {
-        echo "<div style='font-family:sans-serif;padding:3rem;text-align:center'>
-              <h2>🚧 $title</h2><p>Đang được <strong>$tv</strong> phát triển.</p></div>";
-    }
+    $m = $this->model("Cauhoi_m");
+    $rows = $m->list($mon_id, $q, $offset);
+    $total = $m->count($mon_id, $q);
+    $totalPages = (int) ceil($total / $limit);
+
+    $this->view("layout_admin", [
+        "page" => "Pages/ch_list",
+        "rows" => $rows,
+        "mons" => $mons,
+        "mon_id" => $mon_id,
+        "q" => $q,
+        "currPage" => $page,
+        "totalPages" => $totalPages,
+        "limit" => $limit,
+        "total" => $total,
+        "msg" => $this->getFlash("msg"),
+        "err" => $this->getFlash("err"),
+    ]);
 }
+
+    }
